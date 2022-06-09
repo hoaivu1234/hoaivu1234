@@ -1,0 +1,132 @@
+create database btlab8
+go
+use lab8
+go
+
+
+create table KhachHang
+(
+    MaKH varchar(10) primary key,
+	HoTen nvarchar(30) not null,
+	SoDT int not null,
+	CoQuan nvarchar(50) not null
+	)
+
+create table NhaChoThue
+(   
+    MaN int primary key,
+    DiaChi nvarchar(50) not null,
+	GiaThue money not null,
+	TenChuNha nvarchar(30) not null
+	)
+
+	 
+create table HopDong
+(   
+    MaKH varchar(10),
+	MaN int,
+    foreign key (MaKH) references dbo.KhachHang(MaKH),
+	foreign key (MaN) references dbo.NhaChoThue(MaN),
+	NgayBD date not null,
+	NgayKT date not null
+	)
+
+insert into KhachHang(MaKH,HoTen,SoDT,CoQuan)
+values ('KH1',N'Trần Đình Trung','01234556789',N'Dọn rác'),
+       ('KH2',N'Lưu Đăng Dương','0343253242',N'Hút bể phốt'),
+	   ('KH3',N'Vũ Tiến Huy','0214321234',N'Bi-a'),
+	   ('KH4',N'Đậu Nam khoa','0134563450',N'Bốc vác'),
+	   ('KH5',N'Đàm Hữu Quyết','0324674912',N'Giáo sư'),
+	   ('KH6',N'Hoàng Minh Chí','0425365429',N'Văn Phòng'),
+	   ('KH7',N'Lê lộn','0324674432',N'Giáo viên'),
+	   ('KH8',N'Quang tèo','0324674234',N'Shipper'),
+	   ('KH9',N'Đức Cóc','0543534143',N'Bán thuốc lào'),
+	   ('KH10',N'Triều Lôn','0323422423',N'Bảo kê'),
+	   ('KH11',N'Khôi cúc','0324235672',N'Học lại'),
+	   ('KH12',N'Thắng Cố','0234274524',N'sales'),
+	   ('KH13',N'Thái dúi','0945738452',N'coder'),
+	   ('KH14',N'Nguyễn đức Nghĩa','0352475348',N'Du học sinh'),
+	   ('KH15',N'Cù Hoàng','0538745834',N'Công nhân');
+
+insert into NhaChoThue(MaN,DiaChi,GiaThue,TenChuNha)
+values ('1',N'Quảng Hòa',50000000,N'Nông Văn Dền'),
+        ('2',N'Quảng Hợp',5000000,N'Dương Khê'),
+		('3',N'Quảng Long',12000000,N'Trung Meo'),
+		('4',N'Quảng Vọng',7000000,N'Huy Lào'),
+		('5',N'Quảng Phong',1000000,N'Quyết Tứ'),
+		('6',N'Quảng Trạch',11000000,N'Chí Tư'),
+		('7',N'Quảng Hùng',22000000,N'Duy Triều'),
+		('8',N'Quảng Hải',34000000,N'Nhung baby'),
+		('9',N'Quảng Thọ',9000000,N'Trang Bành'),
+		('10',N'Quảng Phú',50000000,N'Trình Cúc');
+    
+insert into HopDong(MaKH,MaN,NgayBD,NgayKT)
+values ('KH1','1','2021-09-21','2022-11-11'),
+       ('KH2','3','2019-03-11','2022-01-11'),
+	   ('KH3','5','2017-11-21','2020-01-01'),
+	   ('KH7','6','2021-11-21','2022-02-11'),
+	   ('KH8','1','2016-09-13','2018-02-22'),
+	   ('KH9','3','2017-02-21','2018-04-11'),
+	   ('KH10','9','2019-09-14','2020-11-15'),
+	   ('KH14','1','2017-11-21','2022-05-11'),
+	   ('KH3','7','2014-09-21','2017-06-11'),
+	   ('KH11','9','2015-09-02','2017-11-11');
+
+--b
+--   Đưa ra danh sách (Địachỉ, Tênchủnhà) của những ngôi nhà có giá thuê ít hơn 10 triệu.
+
+select DiaChi,TenChuNha from NhaChoThue where GiaThue<10000000
+
+--  Đưa ra danh sách (MãKH, Họtên, Cơquan) của những người đã từng thuê nhà của chủ nhà có tên là "Nông Văn Dền"
+select N.MaKH,KH.HoTen,KH.CoQuan from KhachHang as KH inner join
+(select HD.MaKH,HD.MaN,NCT.TenChuNha from NhaChoThue as NCT inner join HopDong as HD on NCT.TenChuNha=N'Nông Văn Dền' and NCT.MaN=HD.MaN ) as N on N.MaKH=KH.MaKH
+
+--  Đưa ra danh sách các ngôi nhà chưa từng được ai thuê
+select * from NhaChoThue as NCT
+except
+select NCT1.*from NhaChoThue as NCT1 inner join HopDong as HD on HD.MaN=NCT1.MaN
+
+-- Đưa ra giá thuê cao nhất trong số các giá thuê của các ngôi nhà đã từng ít nhất một lần được thuê.
+
+select max(NCT.GiaThue) as GiaMax from NhaChoThue as NCT inner join HopDong as HD on HD.MaN=NCT.MaN
+
+--c
+
+CREATE INDEX INDEX_1 ON KhachHang(MaKH)
+--  Viết câu lệnh đưa ra danh sách các khách hàng ở một cơ quan nào đó
+SELECT * FROM KhachHang WHERE COQUAN =N'Bốc vác'
+SET STATISTICS IO ON;
+GO
+
+CREATE INDEX INDEX_2 ON NhaChoThue(MaN)
+--Đưa ra danh sách các Chủ nhà cho thuê và tổng số lượng Nhà cho thuê.
+SELECT TenChuNha,COUNT(*) AS SL_NHACHOTHUE FROM NhaChoThue GROUP BY TenChuNha ORDER BY SL_NHACHOTHUE DESC
+
+-- Đưa ra danh sách các Hợp đồng có giá thuê lớn hơn một ngưỡng cho trước
+
+CREATE PROCEDURE pHOPDONG
+@GIATHUE INT 
+AS 
+BEGIN
+	SELECT HD.* FROM HopDong as HD,NhaChoThue AS NCT WHERE NCT.GIATHUE > @GIATHUE AND NCT.MaN=HD.MaN  
+END
+EXEC pHOPDONG @GIATHUE =5000000
+
+CREATE PROCEDURE pKhachHang
+@TienNha INT
+AS BEGIN
+SELECT KH.*,A.SUM1 FROM KhachHang as KH INNER JOIN (SELECT HD.MaKH,SUM(NCT.GiaThue) AS SUM1 FROM NhaChoThue AS NCT ,HopDong as HD WHERE NCT.MaN = HD.MaN GROUP BY HD.MaKH ) 
+AS A ON A.MaKH = KH.MaKH AND A.SUM1 > @TienNha
+END
+
+-- Đưa ra danh sách khách hàng có tổng giá trịhợp đồng lớn hơn 10 triệu 
+EXEC pKhachHang @TienNha = 10000000
+	   
+
+	   
+	   
+	   
+	   
+    
+
+
